@@ -11,7 +11,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir ortools
 
 # Копіюємо ваші файли в контейнер
-COPY . .
+COPY main.py .
 
 # Команда для запуску
 CMD ["python", "main.py"]
