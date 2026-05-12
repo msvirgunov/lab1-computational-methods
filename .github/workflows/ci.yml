@@ -1,0 +1,36 @@
+# Модель: Математичне моделювання та оптимізація маршрутів доставки (VRP, 5 семестр)
+# Автор: Свиргунов Максим Віталійович, група АІ-235
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install flask ortools
+
+      - name: Check syntax
+        run: |
+          python -m py_compile api.py
+          echo "Syntax OK"
+
+      - name: Build Docker image
+        run: |
+          docker build -t lab2-model .
