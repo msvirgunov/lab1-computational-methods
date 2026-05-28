@@ -1,11 +1,19 @@
 # Модель: Математичне моделювання та оптимізація маршрутів доставки (VRP, 5 семестр)
 # Автор: Свиргунов Максим Віталійович, група АІ-235
 
+import os
 from flask import Flask, request, jsonify
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
 app = Flask(__name__)
+
+DEBUG_MODE = os.environ.get("DEBUG", "false").lower() == "true"
+PORT = int(os.environ.get("PORT", 5000))
+SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
+
+app.secret_key = SECRET_KEY
+
 
 def solve_vrp(distance_matrix, demands, vehicle_capacities, num_vehicles, depot):
     data = {
@@ -16,7 +24,11 @@ def solve_vrp(distance_matrix, demands, vehicle_capacities, num_vehicles, depot)
         'depot': depot
     }
 
-    manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']), data['num_vehicles'], data['depot'])
+    manager = pywrapcp.RoutingIndexManager(
+        len(data['distance_matrix']),
+        data['num_vehicles'],
+        data['depot']
+    )
     routing = pywrapcp.RoutingModel(manager)
 
     def distance_callback(from_index, to_index):
@@ -37,6 +49,7 @@ def solve_vrp(distance_matrix, demands, vehicle_capacities, num_vehicles, depot)
     params.time_limit.seconds = 5
 
     solution = routing.SolveWithParameters(params)
+
     if not solution:
         return None
 
@@ -78,8 +91,18 @@ def calculate():
 
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({"status": "ok", "model": "VRP Optimization", "author": "Свиргунов Максим, АІ-235"})
+    return jsonify({
+        "status": "ok",
+        "model": "VRP Optimization",
+        "author": "Свиргунов Максим, АІ-235",
+        "endpoints": ["/calculate (POST)", "/ (GET)"]
+    })
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "healthy"}), 200
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=PORT, debug=DEBUG_MODE)

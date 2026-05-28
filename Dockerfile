@@ -1,17 +1,18 @@
-# Математичне моделювання та оптимізація маршрутів доставки для мінімізації витрат палива (VRP)
-# Свиргунов Максим АІ-235
+FROM python:3.11-slim
 
-# Використовуємо базовий образ Python
-FROM python:3.9-slim
-
-# Встановлюємо робочу директорію
 WORKDIR /app
 
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir ortools
+COPY . .
 
-# Копіюємо ваші файли в контейнер
-COPY main.py .
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
 
-# Команда для запуску
-CMD ["python", "main.py"]
+EXPOSE 5000
+
+ENV DEBUG=false
+ENV PORT=5000
+
+CMD ["python", "api.py"]
