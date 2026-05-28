@@ -30,8 +30,27 @@ jobs:
       - name: Build Docker image
         run: docker build -t devops-235-svirgunov .
 
-  deploy:
+  security-scan:
     needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image for scanning
+        run: docker build -t devops-235-svirgunov .
+
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devops-235-svirgunov
+          format: table
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+
+  deploy:
+    needs: security-scan
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
